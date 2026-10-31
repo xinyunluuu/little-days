@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#596548" />
+    <meta
+      name="description"
+      content="小日子：把平凡的一天，拼成值得收藏的一页。无需账号，在本地写日记、贴照片、拼贴和导出。"
+    />
+    <meta property="og:title" content="小日子 · little days" />
+    <meta
+      property="og:description"
+      content="把今天，好好收藏。本地优先的自由拼贴手帐。"
+    />
+    <title>小日子 · little days</title>
+    <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <a class="brand" href="./" aria-label="小日子首页"
+        ><svg viewBox="0 0 40 40" aria-hidden="true">
+          <g fill="none" stroke="currentColor" stroke-width="1.6">
+            <path
+              d="M20 20C3 21 6 4 17 11C12-3 30 0 25 14C39 6 43 25 27 24C38 35 20 43 20 28C13 42 0 29 14 23"
+            />
+            <circle cx="20" cy="20" r="3" />
+          </g></svg
+        ><span>小日子<small>little days</small></span></a
+      >
+      <span class="header-note">普通的一天，也值得被记住。</span>
+      <div class="header-actions">
+        <span id="save-status" role="status"><i></i>正在打开手帐</span
+        ><button
+          id="backup-open"
+          class="icon-button"
+          aria-label="备份与设置"
+          title="备份与设置"
+          data-icon="folder"
+        ></button
+        ><button id="export" class="primary">
+          <span data-icon="download"></span><span>导出这一页</span>
+        </button>
+      </div>
+    </header>
+    <div class="app-layout">
+      <aside class="sidebar" id="sidebar">
+        <button id="new-entry" class="new-entry">
+          <span data-icon="plus"></span>写下今天
+        </button>
+        <nav class="view-nav">
+          <button class="active" id="all-entries">
+            <span data-icon="book"></span>我的手帐<span
+              id="entry-count"
+              class="count"
+              >0</span
+            ></button
+          ><button id="inspiration-open">
+            <span data-icon="sparkles"></span>一点灵感<span class="tiny-flower"
+              >✳</span
+            >
+          </button>
+        </nav>
+        <div class="calendar">
+          <div class="calendar-heading">
+            <span id="calendar-title"></span>
+            <div>
+              <button id="prev-month" aria-label="上个月">‹</button
+              ><button id="next-month" aria-label="下个月">›</button>
+            </div>
+          </div>
+          <div class="weekdays">
+            <span>一</span><span>二</span><span>三</span><span>四</span
+            ><span>五</span><span>六</span><span>日</span>
+          </div>
+          <div id="calendar-grid"></div>
+        </div>
+        <div class="list-heading">
+          <span id="list-label">最近的日子</span
+          ><button id="clear-filter" hidden>全部</button>
+        </div>
+        <label class="search"
+          ><span data-icon="search"></span
+          ><input id="search" placeholder="翻找一段回忆…" aria-label="搜索手帐"
+        /></label>
+        <div id="entry-list" class="entry-list"></div>
+        <div class="sidebar-footer">
+          <span data-icon="lock"></span>
+          <div>
+            手帐保存在这台设备<small>本地保存，AI 由你选择开启。</small>
+          </div>
+        </div>
+      </aside>
+      <main class="workspace">
+        <div class="workspace-heading">
+          <div>
+            <span class="eyebrow" id="page-kicker">我的手帐 / 日常碎片</span>
+            <h1>把今天，好好收藏<span class="heading-dot">。</span></h1>
+          </div>
+          <button
+            id="toggle-sidebar"
+            class="icon-button mobile-only"
+            aria-label="打开手帐列表"
+            data-icon="book"
+          ></button>
+        </div>
+        <div class="canvas-toolbar">
+          <div class="tool-group">
+            <button id="add-photo" title="添加照片" aria-label="添加照片">
+              <span data-icon="image"></span><span>照片</span></button
+            ><button id="add-text" title="添加文字">
+              <span class="text-icon">T</span><span>文字</span></button
+            ><button id="add-tape" title="添加胶带">
+              <span data-icon="tape"></span><span>胶带</span>
+            </button>
+          </div>
+          <div class="tool-group">
+            <button
+              id="undo"
+              aria-label="撤销"
+              title="撤销 Ctrl/⌘ Z"
+              data-icon="undo"
+            ></button
+            ><button
+              id="redo"
+              aria-label="重做"
+              title="重做 Ctrl/⌘ Shift Z"
+              data-icon="redo"
+            ></button
+            ><span class="tool-divider"></span
+            ><button id="fit" title="适合窗口">适合</button>
+          </div>
+        </div>
+        <div class="canvas-stage" id="canvas-stage">
+          <div class="paper-wrap" id="paper-wrap">
+            <article
+              id="journal-page"
+              class="journal-page"
+              aria-label="手帐画布"
+            >
+              <div class="page-eyebrow">a little piece of life</div>
+              <div id="page-date" class="page-date"></div>
+              <div id="page-mood" class="page-mood"></div>
+              <div id="page-title" class="page-title"></div>
+              <div id="page-body" class="page-body"></div>
+              <div id="layers"></div>
+              <div class="page-footer">
+                <span>LITTLE DAYS</span><span id="footer-date"></span>
+              </div>
+            </article>
+          </div>
+        </div>
+        <div class="canvas-hint">
+          <span data-icon="move"></span>标题、正文和素材都能拖动
+          <span>·</span> 双击文字开始编辑
+          <span class="desktop-hint">· 方向键微调</span>
+        </div>
+        <p id="text-overflow-note" class="text-overflow-note" hidden>
+          文字超出了文本框。请调整字号、宽高，或把长故事写到下一页。
+        </p>
+        <div class="workspace-bottom">
+          <span id="entry-meta"></span
+          ><button id="delete-entry">
+            <span data-icon="trash"></span>删除这一页
+          </button>
+        </div>
+      </main>
+      <aside class="materials-panel">
+        <div class="panel-tabs" role="tablist" aria-label="手帐编辑面板">
+          <button
+            id="tab-materials"
+            role="tab"
+            aria-selected="true"
+            class="active"
+          >
+            装扮这一页</button
+          ><button id="tab-write" role="tab" aria-selected="false">
+            写点什么</button
+          ><button id="tab-ai" role="tab" aria-selected="false">
+            AI 搭子 <span>✳</span>
+          </button>
+        </div>
+        <section id="materials-view">
+          <div class="section-label">
+            <h2>从一种心情开始</h2>
+            <span>12 款版式</span>
+          </div>
+          <div class="template-categories" id="template-categories"></div>
+          <div class="template-grid" id="template-grid"></div>
+          <div class="section-label paper-label"><h2>纸张的颜色</h2></div>
+          <div class="paper-row">
+            <div id="paper-colors" class="paper-colors"></div>
+            <label class="custom-paper" title="自选纸张颜色"
+              ><input
+                id="custom-paper"
+                type="color"
+                value="#f8f5ec"
+                aria-label="自选纸张颜色"
+              /><span>自选</span></label
+            >
+          </div>
+          <div class="section-label drawer-label">
+            <h2>素材抽屉</h2>
+            <span>点一下，贴上去</span>
+          </div>
+          <div id="sticker-grid" class="sticker-grid"></div>
+          <button id="import-sticker" class="outline-button">
+            <span data-icon="upload"></span>导入自己的照片 / 贴纸
+          </button>
+          <div class="little-note">
+            <span class="note-flower">✳</span>
+            <p>一点点不整齐，<br />也是生活可爱的样子。</p>
+          </div>
+        </section>
+        <section id="write-view" hidden>
+          <label class="field">这一天<input type="date" id="edit-date" /></label
+          ><label class="field"
+            >给今天一个名字<input
+              id="edit-title"
+              maxlength="160"
+              placeholder="今天有什么值得记住？"
+          /></label>
+          <div class="field">
+            今天的心情
+            <div id="mood-picker" class="mood-picker"></div>
+          </div>
+          <label class="field"
+            >留在这一页的话 <span id="body-count">0 / 1200</span
+            ><textarea
+              id="edit-body"
+              rows="7"
+              maxlength="1200"
+              placeholder="一杯刚好的咖啡，一段没有目的地的路，或者只是今天的心情。"
+            ></textarea>
+          </label>
+          <p class="field-help">
+            最多 1200
+            字。点画布里的文字可自由调整位置与字号；内容放不下时，可在同一天续写新的一页。
+          </p>
+          <button id="prompt-next" class="outline-button">
+            <span data-icon="sparkles"></span>给我一个记录灵感
+          </button>
+          <p id="writing-prompt" class="writing-prompt"></p>
+        </section>
+        <section id="ai-view" hidden></section>
+        <section id="text-layout-panel" class="selection-panel" hidden>
+          <div class="section-label">
+            <h2 id="core-heading">文字排版</h2>
+            <button id="core-deselect" aria-label="取消文字选择">×</button>
+          </div>
+          <p class="field-help">拖动文字框换位置。字号、宽高都由你决定。</p>
+          <div class="core-controls">
+            <label class="field"
+              >字号<input
+                id="core-fontSize"
+                type="number"
+                min="12"
+                max="64" /></label
+            ><label class="field"
+              >对齐<select id="core-align">
+                <option value="left">左对齐</option>
+                <option value="center">居中</option>
+                <option value="right">右对齐</option>
+              </select></label
+            ><label class="field"
+              >宽度<input id="core-w" type="number" min="40" max="680" /></label
+            ><label class="field"
+              >高度<input id="core-h" type="number" min="30" max="800" /></label
+            ><label class="field"
+              >横向位置<input
+                id="core-x"
+                type="number"
+                min="0"
+                max="700" /></label
+            ><label class="field"
+              >纵向位置<input
+                id="core-y"
+                type="number"
+                min="0"
+                max="880" /></label
+            ><label class="field" id="core-lineheight-field"
+              >行高<input id="core-lineHeight" type="number" min="16" max="90"
+            /></label>
+          </div>
+        </section>
+        <section id="selection-panel" class="selection-panel" hidden>
+          <div class="section-label">
+            <h2 id="selection-name">调整素材</h2>
+            <button id="deselect" aria-label="取消选择">×</button>
+          </div>
+          <label id="layer-text-field" class="field" hidden
+            >文字<textarea
+              id="layer-text"
+              maxlength="180"
+              rows="3"
+            ></textarea></label
+          ><label class="slider-field"
+            >大小<input
+              id="layer-size"
+              type="range"
+              min="40"
+              max="650" /><output id="size-output"></output></label
+          ><label class="slider-field"
+            >旋转<input
+              id="layer-rotation"
+              type="range"
+              min="-45"
+              max="45" /><output id="rotation-output"></output></label
+          ><label id="text-font-field" class="field" hidden
+            >文字字号<input
+              id="layer-font-size"
+              type="range"
+              min="12"
+              max="64"
+              value="20" /></label
+          ><label id="filter-field" class="field" hidden
+            >照片质感<select id="photo-filter">
+              <option value="original">原片</option>
+              <option value="film">轻胶片</option>
+              <option value="warm">暖调记忆</option>
+              <option value="mono">黑白旧时光</option>
+            </select></label
+          >
+          <div class="layer-actions">
+            <button id="layer-front" title="移到最上层">置顶</button
+            ><button id="layer-copy">复制</button
+            ><button id="layer-delete" class="danger">移除</button>
+          </div>
+        </section>
+      </aside>
+    </div>
+    <input
+      type="file"
+      id="photo-input"
+      accept="image/png,image/jpeg,image/webp"
+      multiple
+      hidden
+    /><input
+      type="file"
+      id="backup-input"
+      accept="application/json,.json"
+      hidden
+    />
+    <div id="toast" role="status" hidden></div>
+    <dialog id="settings-dialog">
+      <div class="dialog-head">
+        <h2>把回忆好好保存</h2>
+        <button data-close aria-label="关闭">×</button>
+      </div>
+      <p>
+        手帐和照片保存在当前浏览器。清理网站数据或更换浏览器会失去本地记录，请定期下载备份。
+      </p>
+      <div class="settings-actions">
+        <button id="backup-download" class="primary">
+          <span data-icon="download"></span>下载完整备份</button
+        ><button id="backup-import" class="outline-button">
+          <span data-icon="upload"></span>从备份导入
+        </button>
+      </div>
+      <p class="field-help">
+        导入会合并新日记；同 ID 的不同内容会另存一份，不覆盖现有记录。
+      </p>
+      <div class="dialog-separator"></div>
+      <h3>可选的创作工具</h3>
+      <p>
+        想做更多素材？项目附有主题配色、照片叙事、透明贴纸三个 Skills。生成好的
+        PNG 可以直接拖进画布。
+      </p>
+      <a href="./docs/creator-kit.md" target="_blank" rel="noopener"
+        >查看创作工具说明 ↗</a
+      >
+      <p class="version">小日子 v1.1 · 无账号 · 本地保存 · 可选自备 AI 接口</p>
+    </dialog>
+    <dialog id="inspiration-dialog">
+      <div class="dialog-head">
+        <h2>日子里的小小切片</h2>
+        <button data-close aria-label="关闭">×</button>
+      </div>
+      <p>不必有大事发生。挑一个瞬间，写下来就好。</p>
+      <div id="prompt-cards" class="prompt-cards"></div>
+      <div class="dialog-separator"></div>
+      <p class="field-help">
+        这是本地记录提示，不会调用 AI，也不会发送你的内容。
+      </p>
+    </dialog>
+    <dialog id="confirm-dialog">
+      <div class="dialog-head"><h2 id="confirm-title"></h2></div>
+      <p id="confirm-message"></p>
+      <div class="confirm-actions">
+        <button id="confirm-cancel" class="outline-button">取消</button
+        ><button id="confirm-ok" class="primary">确定</button>
+      </div>
+    </dialog>
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
